@@ -76,12 +76,6 @@
 #include <linux/miscdevice.h>
 #include <linux/falloc.h>
 #include <linux/uio.h>
-#include <linux/blkdev.h>
-#include <linux/bootmem.h>      /* for max_pfn/max_low_pfn */
-#include <linux/gcd.h>
-#include <linux/lcm.h>
-#include <linux/jiffies.h>
-#include <linux/gfp.h>
 #include "loop.h"
 
 #include <asm/uaccess.h>
@@ -91,27 +85,6 @@ static DEFINE_MUTEX(loop_index_mutex);
 
 static int max_part;
 static int part_shift;
-
-/**
- * blk_queue_flush - configure queue's cache flush capability
- * @q:          the request queue for the device
- * @flush:      0, REQ_FLUSH or REQ_FLUSH | REQ_FUA
- *
- * Tell block layer cache flush capability of @q.  If it supports
- * flushing, REQ_FLUSH should be set.  If it supports bypassing
- * write cache for individual writes, REQ_FUA should be set.
- */
-void blk_queue_flush(struct request_queue *q, unsigned int flush)
-{
-        WARN_ON_ONCE(flush & ~(REQ_FLUSH | REQ_FUA));
-
-        if (WARN_ON_ONCE(!(flush & REQ_FLUSH) && (flush & REQ_FUA)))
-                flush &= ~REQ_FUA;
-
-	 q->flush_flags = flush & (REQ_FLUSH | REQ_FUA);
-}
-EXPORT_SYMBOL_GPL(blk_queue_flush);
-
 
 static int transfer_xor(struct loop_device *lo, int cmd,
 			struct page *raw_page, unsigned raw_off,
@@ -1451,8 +1424,8 @@ int loop_unregister_transfer(int number)
 	return 0;
 }
 
-//EXPORT_SYMBOL(loop_register_transfer);
-//EXPORT_SYMBOL(loop_unregister_transfer);
+EXPORT_SYMBOL(loop_register_transfer);
+EXPORT_SYMBOL(loop_unregister_transfer);
 
 static int loop_queue_rq(struct blk_mq_hw_ctx *hctx,
 		const struct blk_mq_queue_data *bd)
@@ -1882,7 +1855,6 @@ static void __exit loop_exit(void)
 
 module_init(loop_init);
 module_exit(loop_exit);
-MODULE_INFO(vermagic, "4.1.18-gaa01840 SMP preempt mod_unload aarch64");
 
 #ifndef MODULE
 static int __init max_loop_setup(char *str)
