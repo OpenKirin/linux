@@ -56,6 +56,12 @@ config SW_SYNC_USER
 	  *WARNING* improper use of this can result in deadlocking kernel
 	  drivers from userspace.
 
+config OPENKIRIN_INJECTOR
+	tristate "Injector for HiSilicon Processors"
+	default n
+	---help---
+	  Provifes a way to get rid of unnecessary kpanics
+
 source "drivers/staging/android/ion/Kconfig"
 
 endif # if ANDROID
